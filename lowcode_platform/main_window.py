@@ -629,20 +629,24 @@ class MainWindow(QMainWindow):
         self._clear_all_designers()
 
         if self._current_app.forms and hasattr(self, '_form_designer'):
-            form = self._current_app.forms[0]
-            self._form_designer.set_form_schema(form)
+            form_list = list(self._current_app.forms.values())
+            if form_list:
+                self._form_designer.set_form_schema(form_list[0])
 
         if self._current_app.workflows and hasattr(self, '_workflow_designer'):
-            workflow = self._current_app.workflows[0]
-            self._workflow_designer.set_workflow_schema(workflow)
+            workflow_list = list(self._current_app.workflows.values())
+            if workflow_list:
+                self._workflow_designer.set_workflow_schema(workflow_list[0])
 
         if self._current_app.data_models and hasattr(self, '_data_modeler'):
-            datamodel = self._current_app.data_models[0]
-            self._data_modeler.set_datamodel(datamodel)
+            model_list = list(self._current_app.data_models.values())
+            if model_list:
+                self._data_modeler.set_datamodel(model_list[0])
 
         if self._current_app.pages and hasattr(self, '_page_designer'):
-            page = self._current_app.pages[0]
-            self._page_designer.set_page_schema(page)
+            page_list = list(self._current_app.pages.values())
+            if page_list:
+                self._page_designer.set_page_schema(page_list[0])
 
         self._update_status(f"已加载应用: {self._current_app.config.name}")
 
