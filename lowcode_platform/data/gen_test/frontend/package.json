@@ -1,0 +1,16 @@
+{
+  "name": "测试应用",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "vue": "^3.2.0",
+    "vue-router": "^4.0.0",
+    "vuex": "^4.0.0",
+    "axios": "^1.6.0",
+    "element-plus": "^2.4.0"
+  }
+}
