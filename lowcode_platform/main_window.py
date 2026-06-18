@@ -790,6 +790,9 @@ class MainWindow(QMainWindow):
         self._nav_list.setCurrentRow(4)
         self._refresh_permissions()
 
+    def _manage_connectors(self):
+        self._nav_list.setCurrentRow(5)
+
     def _add_role(self):
         name, ok = QInputDialog.getText(self, "添加角色", "请输入角色名称:")
         if ok and name:
