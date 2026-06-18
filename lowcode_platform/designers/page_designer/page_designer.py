@@ -34,43 +34,38 @@ class ComponentPalette(QScrollArea):
         title.setStyleSheet("font-size: 14px; font-weight: bold; padding: 8px;")
         layout.addWidget(title)
 
-        for category, components in PAGE_COMPONENTS.items():
-            category_label = QLabel(category)
-            category_label.setStyleSheet("font-size: 12px; font-weight: bold; color: #666; padding: 8px 4px 4px;")
-            layout.addWidget(category_label)
+        for comp in PAGE_COMPONENTS:
+            item_widget = QFrame()
+            item_widget.setStyleSheet("""
+                QFrame {
+                    background-color: #ffffff;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 6px;
+                    padding: 8px;
+                }
+                QFrame:hover {
+                    background-color: #f0f7ff;
+                    border-color: #1890ff;
+                }
+            """)
+            item_widget.setCursor(Qt.PointingHandCursor)
 
-            for comp in components:
-                item_widget = QFrame()
-                item_widget.setStyleSheet("""
-                    QFrame {
-                        background-color: #ffffff;
-                        border: 1px solid #e0e0e0;
-                        border-radius: 6px;
-                        padding: 8px;
-                    }
-                    QFrame:hover {
-                        background-color: #f0f7ff;
-                        border-color: #1890ff;
-                    }
-                """)
-                item_widget.setCursor(Qt.PointingHandCursor)
+            item_layout = QHBoxLayout(item_widget)
+            item_layout.setContentsMargins(8, 4, 8, 4)
 
-                item_layout = QHBoxLayout(item_widget)
-                item_layout.setContentsMargins(8, 4, 8, 4)
+            icon_label = QLabel(comp.get("icon", "📦"))
+            icon_label.setStyleSheet("font-size: 16px;")
+            icon_label.setFixedWidth(28)
 
-                icon_label = QLabel(comp.get("icon", "📦"))
-                icon_label.setStyleSheet("font-size: 16px;")
-                icon_label.setFixedWidth(28)
+            name_label = QLabel(comp.get("name", comp["type"]))
+            name_label.setStyleSheet("font-size: 13px;")
 
-                name_label = QLabel(comp.get("name", comp["type"]))
-                name_label.setStyleSheet("font-size: 13px;")
+            item_layout.addWidget(icon_label)
+            item_layout.addWidget(name_label, 1)
 
-                item_layout.addWidget(icon_label)
-                item_layout.addWidget(name_label, 1)
+            item_widget.mousePressEvent = lambda e, c=comp: self._start_drag(e, c)
 
-                item_widget.mousePressEvent = lambda e, c=comp: self._start_drag(e, c)
-
-                layout.addWidget(item_widget)
+            layout.addWidget(item_widget)
 
         layout.addStretch(1)
         self.setWidget(container)
