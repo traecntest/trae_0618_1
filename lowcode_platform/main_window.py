@@ -512,12 +512,12 @@ class MainWindow(QMainWindow):
 
     def _on_app_name_changed(self):
         if self._current_app:
-            self._current_app.name = self._app_name_label.text()
+            self._current_app.config.name = self._app_name_label.text()
             self._update_status("应用名称已更新")
 
     def _on_app_desc_changed(self):
         if self._current_app:
-            self._current_app.description = self._app_desc_label.text()
+            self._current_app.config.description = self._app_desc_label.text()
             self._update_status("应用描述已更新")
 
     def _create_new_app(self):
@@ -529,12 +529,10 @@ class MainWindow(QMainWindow):
         )
         if ok and name:
             self._current_app = AppSchema(
-                name=name,
-                description="",
                 config=AppConfig(
+                    name=name,
+                    description="",
                     version="1.0.0",
-                    theme="light",
-                    language="zh-CN",
                 ),
             )
             self._app_name_label.setText(name)
@@ -563,8 +561,8 @@ class MainWindow(QMainWindow):
         store = JsonStore("apps")
         store.save(self._current_app.id, self._current_app.model_dump())
 
-        self._update_status(f"应用已保存: {self._current_app.name}")
-        QMessageBox.information(self, "保存成功", f"应用 '{self._current_app.name}' 已保存！")
+        self._update_status(f"应用已保存: {self._current_app.config.name}")
+        QMessageBox.information(self, "保存成功", f"应用 '{self._current_app.config.name}' 已保存！")
 
     def _save_app_as(self):
         if not self._current_app:
@@ -575,12 +573,12 @@ class MainWindow(QMainWindow):
             self, "另存为",
             "请输入新的应用名称:",
             QLineEdit.Normal,
-            self._current_app.name + "_copy"
+            self._current_app.config.name + "_copy"
         )
         if ok and name:
             self._collect_app_data()
             self._current_app.id = generate_id()
-            self._current_app.name = name
+            self._current_app.config.name = name
             self._app_name_label.setText(name)
 
             from core.storage.json_store import JsonStore
@@ -625,8 +623,8 @@ class MainWindow(QMainWindow):
 
     def _load_app_data(self, app_data: dict):
         self._current_app = AppSchema(**app_data)
-        self._app_name_label.setText(self._current_app.name)
-        self._app_desc_label.setText(self._current_app.description)
+        self._app_name_label.setText(self._current_app.config.name)
+        self._app_desc_label.setText(self._current_app.config.description)
 
         self._clear_all_designers()
 
@@ -646,7 +644,7 @@ class MainWindow(QMainWindow):
             page = self._current_app.pages[0]
             self._page_designer.set_page_schema(page)
 
-        self._update_status(f"已加载应用: {self._current_app.name}")
+        self._update_status(f"已加载应用: {self._current_app.config.name}")
 
     def _collect_app_data(self):
         if not self._current_app:
@@ -655,34 +653,22 @@ class MainWindow(QMainWindow):
         if hasattr(self, '_form_designer'):
             form_schema = self._form_designer.get_form_schema()
             if form_schema:
-                if not self._current_app.forms:
-                    self._current_app.forms = []
-                if form_schema not in self._current_app.forms:
-                    self._current_app.forms.append(form_schema)
+                self._current_app.add_form(form_schema)
 
         if hasattr(self, '_workflow_designer'):
             workflow_schema = self._workflow_designer.get_workflow_schema()
             if workflow_schema:
-                if not self._current_app.workflows:
-                    self._current_app.workflows = []
-                if workflow_schema not in self._current_app.workflows:
-                    self._current_app.workflows.append(workflow_schema)
+                self._current_app.add_workflow(workflow_schema)
 
         if hasattr(self, '_data_modeler'):
             datamodel = self._data_modeler.get_datamodel()
             if datamodel:
-                if not self._current_app.data_models:
-                    self._current_app.data_models = []
-                if datamodel not in self._current_app.data_models:
-                    self._current_app.data_models.append(datamodel)
+                self._current_app.add_data_model(datamodel)
 
         if hasattr(self, '_page_designer'):
             page_schema = self._page_designer.get_page_schema()
             if page_schema:
-                if not self._current_app.pages:
-                    self._current_app.pages = []
-                if page_schema not in self._current_app.pages:
-                    self._current_app.pages.append(page_schema)
+                self._current_app.add_page(page_schema)
 
     def _publish_app(self, deploy_type: str = "local"):
         if not self._current_app:
@@ -694,7 +680,7 @@ class MainWindow(QMainWindow):
 
         reply = QMessageBox.question(
             self, "确认发布",
-            f"确定要发布应用 '{self._current_app.name}' 吗？\n发布类型: {deploy_type}",
+            f"确定要发布应用 '{self._current_app.config.name}' 吗？\n发布类型: {deploy_type}",
             QMessageBox.Yes | QMessageBox.No
         )
         if reply != QMessageBox.Yes:
@@ -711,7 +697,7 @@ class MainWindow(QMainWindow):
                 self._update_status(f"应用发布成功: {result.get('output_path', '')}")
                 QMessageBox.information(
                     self, "发布成功",
-                    f"应用 '{self._current_app.name}' 发布成功！\n\n"
+                    f"应用 '{self._current_app.config.name}' 发布成功！\n\n"
                     f"输出路径: {result.get('output_path', '')}\n"
                     f"访问地址: {result.get('url', 'http://localhost:8000')}"
                 )
@@ -773,7 +759,7 @@ class MainWindow(QMainWindow):
 
         file_path, _ = QFileDialog.getSaveFileName(
             self, "导出应用包",
-            f"{self._current_app.name}.zip",
+            f"{self._current_app.config.name}.zip",
             "应用包 (*.zip)"
         )
         if file_path:
